@@ -14,9 +14,12 @@ class Node(object):
         self.buffer = []
         self.portlink(addr,ports)
         
-    def send(self, message, addr):
-        print str(addr)
-        self.conn.sendto(message, addr)
+    def send(self, message):
+        try:
+            self.conn.sendto(message, self.addr)
+        except:
+            time.sleep(0.01)
+            self.send(message)
     def portlink(self,addr,ports):
         while True:
             s= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -46,7 +49,9 @@ class Node(object):
             self.online = False
         print "check"
         self.open = True
-    def listen(self):
+        t = Thread(self.__listen__())
+        t.start()
+    def __listen__(self):
         while self.open:
             data, address = self.conn.recvfrom(64)
             if address == self.addr:
@@ -54,6 +59,5 @@ class Node(object):
             
 ports = range(30000,65000,300)
 
-global node
-node = Node("96.241.211.120", ports)
-node.listen()
+node = Node("73.172.209.102", ports)
+node.send("THIS MEANS THAT IT WORKS")
