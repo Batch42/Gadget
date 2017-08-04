@@ -102,12 +102,10 @@ class Node(object):
             data, address = self.inbound.recvfrom(64)
             if address == self.fromaddr:
                 self.buffer.append(data)
-                print str(data)
 ports = range(30000,65000,300)
 
 node = Node("73.172.209.102", ports, False)
 while(True):
-    time.sleep(2)
-    print len(node.buffer)
+    node.send(str(raw_input("")))
     if len(node.buffer) != 0:
         print node.buffer[len(node.buffer)-1]
