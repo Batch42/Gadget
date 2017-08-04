@@ -26,12 +26,6 @@ class Node(object):
             
     def portlink(self,addr,ports,start):
         if start:
-            temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            temp.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
-            tempaddr = temp.getsockname()
-            temp.close()
-            self.inbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.inbound.bind(tempaddr)
             while True:
                 s= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
@@ -51,12 +45,21 @@ class Node(object):
             sock.close()
             flower = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             flower.bind(addr2bind)
+            print "waiting"
             data, address = flower.recvfrom(64)
+            print "completing"
             self.toaddr = address
             self.fromaddr = (addr,int(data))
             flower.close()
+            temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            temp.sendto("t", self.fromaddr)
+            tempaddr = temp.getsockname()
+            temp.close()
+            self.inbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.inbound.bind(tempaddr)
             self.outbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.outbound.bind(addr2bind)
+            self.outbound.connect(self.toaddr)
             self.outbound.sendto(str(self.inbound.getsockname()[1]),self.toaddr)
             self.open = True
             t = Thread(self.__listen__())
@@ -84,7 +87,9 @@ class Node(object):
             sock.close()
             self.inbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.inbound.bind(addr2bind)
+            print "waiting"
             data, address = self.inbound.recvfrom(64)
+            print "complete"
             self.fromaddr = address
             self.toaddr = (addr,int(data))
             self.outbound.sendto("check",self.toaddr)
@@ -99,7 +104,7 @@ class Node(object):
             
 ports = range(30000,65000,300)
 
-node = Node("73.172.209.102", ports, True)
+node = Node("73.172.209.102", ports, False)
 node.send("THIS MEANS THAT IT WORKS")
 time.sleep(3)
 print node.buffer[0]
