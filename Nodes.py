@@ -47,10 +47,11 @@ class Node(object):
             flower.bind(addr2bind)
             print "waiting"
             data, address = flower.recvfrom(64)
-            print "completing"
+            print str(address)
             self.toaddr = address
             self.fromaddr = (addr,int(data))
             flower.close()
+            time.sleep(5)
             temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             temp.sendto("t", self.fromaddr)
             tempaddr = temp.getsockname()
@@ -60,9 +61,9 @@ class Node(object):
             self.outbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.outbound.bind(addr2bind)
             self.outbound.connect(self.toaddr)
-            self.outbound.sendto(str(self.inbound.getsockname()[1]),self.toaddr)
+            self.outbound.sendto(str(tempaddr[1]),self.toaddr)
             self.open = True
-            t = Thread(self.__listen__())
+            t = Thread(target = self.__listen__)
             t.start()
         else:
             self.outbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -94,17 +95,19 @@ class Node(object):
             self.toaddr = (addr,int(data))
             self.outbound.sendto("check",self.toaddr)
             self.open = True
-            t = Thread(self.__listen__())
+            t = Thread(target = self.__listen__)
             t.start()
     def __listen__(self):
         while self.open:
             data, address = self.inbound.recvfrom(64)
             if address == self.fromaddr:
                 self.buffer.append(data)
-            
+                print str(data)
 ports = range(30000,65000,300)
 
 node = Node("73.172.209.102", ports, False)
-node.send("THIS MEANS THAT IT WORKS")
-time.sleep(3)
-print node.buffer[0]
+while(True):
+    time.sleep(2)
+    print len(node.buffer)
+    if len(node.buffer) != 0:
+        print node.buffer[len(node.buffer)-1]
