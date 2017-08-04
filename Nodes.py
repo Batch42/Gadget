@@ -26,7 +26,10 @@ class Node(object):
             
     def portlink(self,addr,ports,start):
         if start:
+            temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            temp.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
             self.inbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.inbound.bind(temp.getsockname())
             while True:
                 s= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
@@ -52,12 +55,13 @@ class Node(object):
             flower.close()
             self.outbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.outbound.bind(addr2bind)
-            self.outbound.sendto(self.inbound.getsockname()[1],self.toaddr)
+            self.outbound.sendto(str(self.inbound.getsockname()[1]),self.toaddr)
             self.open = True
             t = Thread(self.__listen__())
             t.start()
         else:
             self.outbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.outbound.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
             time.sleep(0.02*len(ports))
             while True:
                 s= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -70,7 +74,7 @@ class Node(object):
                     s.close()  
                     time.sleep(0.01)
             for p in ports:
-                sock.sendto(self.outbound.getsockname()[1],(addr,p))
+                sock.sendto(str(self.outbound.getsockname()[1]),(addr,p))
                 time.sleep(0.01)
         
             
