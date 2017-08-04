@@ -28,8 +28,10 @@ class Node(object):
         if start:
             temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             temp.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
+            tempaddr = temp.getsockname()
+            temp.close()
             self.inbound = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.inbound.bind(temp.getsockname())
+            self.inbound.bind(tempaddr)
             while True:
                 s= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.sendto("t", (socket.gethostbyname(socket.gethostname()), 5555))
@@ -97,7 +99,7 @@ class Node(object):
             
 ports = range(30000,65000,300)
 
-node = Node("73.172.209.102", ports, False)
+node = Node("73.172.209.102", ports, True)
 node.send("THIS MEANS THAT IT WORKS")
 time.sleep(3)
 print node.buffer[0]
